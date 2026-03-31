@@ -1,8 +1,8 @@
 # Neural Networks from Scratch
 
-My implementation notes and code from Andrej Karpathy's ["Neural Networks: Zero to Hero"](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ) series. Everything is written from scratch in Python/PyTorch to understand how neural networks and language models actually work under the hood.
+My implementation notes and code from Andrej Karpathy's ["Neural Networks: Zero to Hero"](https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ) series. Everything is written from scratch in Python/PyTorch to understand how neural networks and language models actually work.
 
-I'm an engineering student at CentraleSupélec. I started this as a self-teaching project before my official ML coursework because I wanted to understand LLMs deeply — not just use APIs.
+I'm an engineering student at CentraleSupélec. I started this as an official ML coursework project, the goal is to understand LLMs deeply.
 
 ## What's in here
 
