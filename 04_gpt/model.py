@@ -1,23 +1,9 @@
 """
 model.py — Mini-GPT from scratch avec PyTorch
-
-Implémentation d'un Transformer decoder-only (type GPT) from scratch,
-inspiré du tutoriel "Let's build GPT" d'Andrej Karpathy.
+tutoriel "Let's build GPT" d'Andrej Karpathy.
 https://www.youtube.com/watch?v=kCc8FmEb1nY
 
-L'objectif n'est pas de créer un modèle performant, mais de comprendre
-chaque composant du Transformer en l'implémentant soi-même.
-
-Architecture :
-    Input text → Tokenizer (char-level) → Token Embeddings + Position Embeddings
-    → N × Transformer Blocks (Attention + FeedForward) → Linear → Logits
-
-Chaque Transformer Block contient :
-    1. Multi-Head Self-Attention (avec masque causal)
-    2. FeedForward Network (2 couches linéaires + ReLU)
-    3. Residual connections + LayerNorm
-
-Usage :
+use:
     python model.py                    # entraîne et génère du texte
     python model.py --n_heads 8        # expérimenter avec 8 têtes d'attention
     python model.py --n_embd 128       # expérimenter avec des embeddings de dim 128
@@ -33,7 +19,6 @@ from pathlib import Path
 
 
 class CharTokenizer:
-    """Tokenizer caractère par caractère."""
 
     def __init__(self, text):
         # trouver tous les caractères uniques dans le texte
@@ -58,7 +43,6 @@ class CharTokenizer:
 
 
 class SelfAttentionHead(nn.Module):
-    """Une seule tête d'attention."""
 
     def __init__(self, n_embd, head_size, block_size):
         super().__init__()
@@ -111,7 +95,6 @@ class SelfAttentionHead(nn.Module):
 
 
 class MultiHeadAttention(nn.Module):
-    """Plusieurs têtes d'attention en parallèle."""
 
     def __init__(self, n_embd, n_heads, block_size):
         super().__init__()
@@ -139,7 +122,6 @@ class MultiHeadAttention(nn.Module):
 
 
 class FeedForward(nn.Module):
-    """Réseau feed-forward à 2 couches."""
 
     def __init__(self, n_embd):
         super().__init__()
@@ -156,7 +138,6 @@ class FeedForward(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    """Un bloc Transformer : Attention → FeedForward avec residuals."""
 
     def __init__(self, n_embd, n_heads, block_size):
         super().__init__()
@@ -175,7 +156,6 @@ class TransformerBlock(nn.Module):
 
 
 class MiniGPT(nn.Module):
-    """Transformer decoder-only from scratch."""
 
     def __init__(self, vocab_size, n_embd, n_heads, n_layer, block_size):
         super().__init__()
@@ -244,9 +224,6 @@ class MiniGPT(nn.Module):
     @torch.no_grad()
     def generate(self, idx, max_new_tokens, temperature=1.0):
         """
-        Génère du texte de manière autorégressive.
-        À chaque étape : prédire le prochain token → l'ajouter → recommencer.
-
         temperature : contrôle la "créativité"
             - temperature < 1 : plus conservateur, plus répétitif
             - temperature > 1 : plus créatif, plus chaotique
@@ -281,12 +258,9 @@ class MiniGPT(nn.Module):
 
 def load_data(filepath, tokenizer, block_size, batch_size, train_ratio=0.9):
     """
-    Charge le texte, le tokenise, et crée des batches pour l'entraînement.
-
-    Le dataset est découpé en séquences de taille block_size.
-    Pour chaque séquence input [t0, t1, ..., tn], le target est
-    la séquence décalée d'un cran [t1, t2, ..., tn+1].
-    → Le modèle apprend à prédire le token suivant à chaque position.
+    charge le texte, le tokenise, et crée des batches pour l'entraînement.
+    dataset est découpé en séquences de taille block_size.
+    input [t0, t1, ..., tn], donc séquence décalée d'un cran [t1, t2, ..., tn+1].
     """
     with open(filepath, "r") as f:
         text = f.read()
@@ -305,11 +279,10 @@ def load_data(filepath, tokenizer, block_size, batch_size, train_ratio=0.9):
 
 def get_batch(data, block_size, batch_size, device):
     """
-    Tire un batch aléatoire de séquences depuis le dataset.
-
-    Chaque séquence commence à une position aléatoire dans le texte.
-    Input = data[i : i+block_size]
-    Target = data[i+1 : i+block_size+1]  (décalé d'un token)
+    tire un lot aléatoire de séquences depuis le dataset.
+    chaque séquence commence à une position aléatoire dans le texte.
+    input = data[i : i+block_size]
+    target = data[i+1 : i+block_size+1]  (décalé d'un token)
     """
     # positions de départ aléatoires
     ix = torch.randint(len(data) - block_size, (batch_size,))
@@ -327,7 +300,7 @@ def get_batch(data, block_size, batch_size, device):
 
 @torch.no_grad()
 def estimate_loss(model, train_data, val_data, block_size, batch_size, device, n_eval=50):
-    """Estime la loss sur les datasets train et val."""
+    """estime la loss sur les datasets train et val."""
     model.eval()
     losses = {}
     for name, data in [("train", train_data), ("val", val_data)]:
@@ -342,7 +315,6 @@ def estimate_loss(model, train_data, val_data, block_size, batch_size, device, n
 
 
 def train(model, train_data, val_data, config, device):
-    """Boucle d'entraînement."""
     optimizer = torch.optim.AdamW(model.parameters(), lr=config["lr"])
 
     print(f"\nEntraînement : {config['max_steps']} steps")
