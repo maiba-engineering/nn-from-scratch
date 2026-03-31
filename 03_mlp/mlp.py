@@ -4,11 +4,6 @@ mlp.py — MLP character-level language model (vidéos 3-5 de Karpathy)
 Évolution du bigram : au lieu de regarder UN seul caractère pour prédire
 le suivant, on regarde les N derniers caractères (le "contexte").
 
-Architecture : caractères → embeddings → MLP → prédiction du prochain
-
-Ce modèle est meilleur que le bigram parce qu'il a du contexte,
-mais il ne peut pas gérer les dépendances longues.
-Pour ça, il faudra le Transformer (vidéo 7 → dossier 04_gpt/).
 
 Concepts introduits dans les vidéos 3-5 :
 - Embeddings : transformer un index en vecteur de nombres

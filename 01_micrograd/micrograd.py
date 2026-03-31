@@ -1,11 +1,7 @@
 """
 micrograd.py — Moteur d'autograd from scratch (vidéo 1 de Karpathy)
 
-C'est le point de départ de tout. Avant de comprendre les Transformers,
-il faut comprendre comment un réseau de neurones apprend — et pour ça,
-il faut comprendre la backpropagation (rétropropagation du gradient).
-
-L'idée : chaque opération mathématique (addition, multiplication, etc.)
+chaque opération mathématique (addition, multiplication, etc.)
 sait calculer son gradient local. En enchaînant ces gradients du bout
 à l'origine (la "chain rule"), on obtient le gradient de la loss par
 rapport à chaque paramètre. C'est ce gradient qui dit dans quelle

@@ -32,17 +32,6 @@ import time
 from pathlib import Path
 
 
-# ============================================================
-# TOKENIZER (niveau caractère)
-# ============================================================
-# Le tokenizer le plus simple possible : chaque caractère unique
-# du texte reçoit un numéro (index). "a" → 0, "b" → 1, etc.
-#
-# Les vrais LLMs utilisent des tokenizers plus sophistiqués
-# (BPE, SentencePiece) qui découpent en sous-mots, mais le
-# tokenizer caractère suffit pour comprendre l'architecture.
-# ============================================================
-
 class CharTokenizer:
     """Tokenizer caractère par caractère."""
 
@@ -67,24 +56,6 @@ class CharTokenizer:
         return "".join([self.idx_to_char[i] for i in indices])
 
 
-# ============================================================
-# COMPOSANT 1 : SELF-ATTENTION (une seule tête)
-# ============================================================
-# L'attention c'est le mécanisme clé du Transformer.
-# L'idée : pour chaque token, calculer à quel point il doit
-# "faire attention" aux autres tokens de la séquence.
-#
-# Concrètement, chaque token produit 3 vecteurs :
-#   - Query (Q) : "qu'est-ce que je cherche ?"
-#   - Key (K)   : "qu'est-ce que je contiens ?"
-#   - Value (V) : "qu'est-ce que je transmets ?"
-#
-# Le score d'attention entre deux tokens = Q · K^T / √d
-# Plus le score est élevé, plus un token "fait attention" à l'autre.
-#
-# Le masque causal empêche un token de regarder les tokens futurs
-# (sinon le modèle tricherait en regardant la réponse).
-# ============================================================
 
 class SelfAttentionHead(nn.Module):
     """Une seule tête d'attention."""
@@ -102,14 +73,12 @@ class SelfAttentionHead(nn.Module):
         # les 1 en bas = "autorisé à regarder", les 0 en haut = "interdit"
         #
         # Exemple pour une séquence de 4 tokens :
-        # [[1, 0, 0, 0],    ← token 0 ne voit que lui-même
-        #  [1, 1, 0, 0],    ← token 1 voit tokens 0 et 1
-        #  [1, 1, 1, 0],    ← token 2 voit tokens 0, 1, 2
-        #  [1, 1, 1, 1]]    ← token 3 voit tout
+        # [[1, 0, 0, 0],    token 0 ne voit que lui-même
+        #  [1, 1, 0, 0],    token 1 voit tokens 0 et 1
+        #  [1, 1, 1, 0],    token 2 voit tokens 0, 1, 2
+        #  [1, 1, 1, 1]]    token 3 voit tout
         #
-        # C'est CE masque qui m'a posé problème au début —
-        # sans torch.tril, le modèle voyait tout et apprenait à copier
-        # au lieu de prédire.
+        # sans torch.tril, le modèle voyait tout et apprenait à copier au lieu de prédire.
         self.register_buffer(
             "mask",
             torch.tril(torch.ones(block_size, block_size))
@@ -141,20 +110,6 @@ class SelfAttentionHead(nn.Module):
         return out
 
 
-# ============================================================
-# COMPOSANT 2 : MULTI-HEAD ATTENTION
-# ============================================================
-# Au lieu d'une seule grosse tête d'attention, on en utilise
-# plusieurs petites en parallèle. Chaque tête peut apprendre
-# à "faire attention" à des patterns différents :
-#   - une tête pour la syntaxe
-#   - une tête pour la sémantique
-#   - une tête pour les dépendances longues
-#   - etc.
-#
-# Les sorties sont concaténées puis projetées.
-# ============================================================
-
 class MultiHeadAttention(nn.Module):
     """Plusieurs têtes d'attention en parallèle."""
 
@@ -181,16 +136,7 @@ class MultiHeadAttention(nn.Module):
         return out
 
 
-# ============================================================
-# COMPOSANT 3 : FEEDFORWARD NETWORK
-# ============================================================
-# Après l'attention, chaque token passe par un petit réseau
-# de neurones à 2 couches. C'est ici que le modèle "réfléchit"
-# sur les informations collectées par l'attention.
-#
-# Architecture : Linear(n_embd → 4*n_embd) → ReLU → Linear(4*n_embd → n_embd)
-# Le facteur 4 vient du papier original "Attention Is All You Need".
-# ============================================================
+
 
 class FeedForward(nn.Module):
     """Réseau feed-forward à 2 couches."""
@@ -207,18 +153,7 @@ class FeedForward(nn.Module):
         return self.net(x)
 
 
-# ============================================================
-# COMPOSANT 4 : TRANSFORMER BLOCK
-# ============================================================
-# Un bloc Transformer = Attention + FeedForward
-# avec des residual connections et de la LayerNorm.
-#
-# Residual connections : on ajoute l'input à la sortie (x + f(x))
-# → ça aide les gradients à circuler pendant l'entraînement
-#
-# LayerNorm : normalise les activations pour stabiliser l'entraînement
-# (appliquée AVANT chaque sous-couche, c'est le "Pre-LN" style)
-# ============================================================
+
 
 class TransformerBlock(nn.Module):
     """Un bloc Transformer : Attention → FeedForward avec residuals."""
@@ -238,16 +173,6 @@ class TransformerBlock(nn.Module):
         return x
 
 
-# ============================================================
-# MODÈLE COMPLET : MINI-GPT
-# ============================================================
-# L'assemblage final : embeddings → N blocs Transformer → sortie
-#
-# Le modèle prend une séquence de tokens (indices) en entrée
-# et prédit pour chaque position quel sera le prochain token.
-# C'est un modèle "autorégressif" : il génère un token à la fois,
-# puis le rajoute à l'input pour générer le suivant.
-# ============================================================
 
 class MiniGPT(nn.Module):
     """Transformer decoder-only from scratch."""
@@ -448,27 +373,10 @@ def train(model, train_data, val_data, config, device):
     print(f"\nEntraînement terminé en {time.time() - start:.0f}s")
 
 
-# ============================================================
 # EXPÉRIMENTATIONS
-# ============================================================
-# C'est ici qu'on peut expérimenter avec les hyperparamètres
-# pour comprendre leur impact sur la qualité du modèle :
-#
-# Essaie par exemple :
-#   python model.py --n_heads 1     vs     python model.py --n_heads 8
-#   python model.py --n_embd 32     vs     python model.py --n_embd 256
-#   python model.py --n_layer 2     vs     python model.py --n_layer 8
-#
-# Questions à se poser :
-# - Plus de têtes d'attention = meilleur ? toujours ?
-# - Plus d'embeddings = meilleur ? à quel coût en paramètres ?
-# - Plus de couches = meilleur ? quand est-ce que ça sert plus à rien ?
-# ============================================================
 
 
-# ============================================================
 # POINT D'ENTRÉE
-# ============================================================
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mini-GPT from scratch")
