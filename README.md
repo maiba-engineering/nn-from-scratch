@@ -10,14 +10,14 @@ I'm an engineering student at CentraleSupélec. I started this as an official ML
 |---|---|---|---|
 | `01_micrograd/` | Intro to backpropagation | Autograd engine from scratch | How gradients flow backwards |
 | `02_bigram/` | Intro to language modeling | Bigram character-level model | How language models predict the next token |
-| `03_mlp/` | MLP + activations + BatchNorm | Multi-layer perceptron for text | Training, overfitting, learning rate tuning |
+| `03_mlp/` | MLP and activations | Multi-layer perceptron for text | Training, overfitting, learning rate tuning |
 | `04_gpt/` | Let's build GPT | **Full Transformer from scratch** | Attention, multi-head, positional encoding |
 
 ## The journey
 
-I watched the videos in order over a few weeks. For each one, I first watched the full video taking notes, then re-implemented everything myself without looking at the code. When something didn't work (which happened a lot), I went back to compare with Karpathy's version to find my mistakes.
+I watched the videos in order over a few weeks. For each one, I first watched the full video taking notes, then re-implemented everything myself without looking at the code. When something didn't work (which happened a lot!), I went back to compare with Karpathy's version to find my mistakes.
 
-The most important thing I learned: watching someone code a neural net and actually coding one yourself are two very different things. The bugs you encounter when you do it yourself — wrong tensor shapes, broken gradients, silent logical errors — are where the real learning happens.
+The most important thing I learned: watching someone code a neural net and actually coding one yourself are two very different things. The bugs you encounter when you do it yourself, which often was about wrong tensor shapes, broken gradients, silent logical errors, are where I learned the most.
 
 ## How to run
 
@@ -42,8 +42,8 @@ python model.py
 ## Stack
 
 - Python 3.10+
-- PyTorch (only for 02_bigram onwards — micrograd is pure Python)
-- No HuggingFace, no high-level libraries
+- PyTorch (only for 02_bigram onwards, micrograd is pure Python)
+- No high-level libraries
 
 ## References
 
